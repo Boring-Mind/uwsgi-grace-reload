@@ -29,6 +29,8 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y \
         curl \
         build-essential \
+        # Is needed for Gunicorn grace reload script
+        procps \
     && apt-get clean
 
 # Install Poetry - respects $POETRY_VERSION & $POETRY_HOME
@@ -44,15 +46,16 @@ COPY pyproject.toml ./poetry.lock* $PYSETUP_PATH
 # 'development' stage installs all dev deps and can be used to develop code.
 # For example, using docker-compose to mount local volume under /app
 FROM python-base as development
-ENV DJANGO_DEBUG_MODE=True
 
 # Copying poetry and venv into image
 COPY --from=builder-base $POETRY_HOME $POETRY_HOME
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
 # Copying in our entrypoint
-COPY ./devops/entrypoint-dev.sh /app/container-entrypoint.sh
-RUN chmod +x /app/container-entrypoint.sh
+COPY --chmod=744 ./devops/entrypoint-dev.sh /app/container-entrypoint.sh
+
+# Copying in our Gunicorn grace reload script
+COPY --chmod=744 ./devops/gunicorn-grace-reload.sh /app/gunicorn-grace-reload.sh
 
 # Install dev dependencies
 WORKDIR $PYSETUP_PATH
