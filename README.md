@@ -1,2 +1,2 @@
-# uwsgi-grace-reload
-Greaceful reload of Django under uWSGI server
+# Grace reload
+Greaceful reload of Django under Gunicorn server
