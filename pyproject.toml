@@ -10,6 +10,7 @@ packages = [{include = "uwsgi_reload"}]
 python = "^3.8"
 django = "<4.0.0"
 gunicorn = "20.1.0"
+djangorestframework = "3.11.2"
 
 
 [build-system]
