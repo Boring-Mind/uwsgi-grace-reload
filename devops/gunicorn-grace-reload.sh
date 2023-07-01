@@ -1,3 +1,2 @@
 #!/bin/sh
-# ToDo: fix this script
-kill -HUP `ps -C gunicorn fch -o pid | head -n`
+xargs kill -HUP < /opt/gunicorn_master.pid
