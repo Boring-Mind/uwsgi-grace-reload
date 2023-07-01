@@ -47,12 +47,17 @@ RUN --mount=type=cache,target=/root/.cache/pypoetry \
 
 # 'development' stage installs all dev deps and can be used to develop code.
 # For example, using docker-compose to mount local volume under /app
-FROM python:3.8.17-slim-bullseye as development
+FROM python:3.8.17-alpine3.18 as development
+
+ENV PYSETUP_PATH="/opt/pysetup" \
+    VENV_PATH="/opt/pysetup/.venv" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+RUN mkdir -p $PYSETUP_PATH
 
 # Copying poetry and venv into image
 COPY --from=base $PYSETUP_PATH $PYSETUP_PATH
-
-ENV VENV_PATH="/opt/pysetup/.venv"
 
 # Copying in our entrypoint
 COPY --chmod=744 ./devops/entrypoint-dev.sh /app/container-entrypoint.sh
