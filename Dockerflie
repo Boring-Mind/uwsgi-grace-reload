@@ -54,9 +54,11 @@ ENV PYSETUP_PATH="/opt/pysetup" \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-RUN mkdir -p $PYSETUP_PATH
+# Update python packages to the latest versions
+RUN pip install -U pip wheel setuptools
 
 # Copying poetry and venv into image
+RUN mkdir -p $PYSETUP_PATH
 COPY --from=base $PYSETUP_PATH $PYSETUP_PATH
 
 # Copying in our entrypoint
