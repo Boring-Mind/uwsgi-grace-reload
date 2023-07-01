@@ -4,7 +4,7 @@
 # Instruction how to set up BuildKit is here:
 # https://docs.docker.com/build/buildkit/#getting-started
 
-FROM python:3.8.17-slim-bullseye as python-base
+FROM python:3.8.17-slim-bullseye as base
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -22,9 +22,6 @@ ENV PYTHONUNBUFFERED=1 \
 
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 
-# builder-base is used to build dependencies
-# ToDo: merge builder-base with python-base
-FROM python-base as builder-base
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
         curl \
@@ -43,24 +40,25 @@ RUN mkdir $PYSETUP_PATH
 # and install only runtime deps using poetry
 COPY pyproject.toml ./poetry.lock* $PYSETUP_PATH
 
+# Install python dependencies
+WORKDIR $PYSETUP_PATH
+RUN --mount=type=cache,target=/root/.cache/pypoetry \
+    poetry install --no-root
+
 # 'development' stage installs all dev deps and can be used to develop code.
 # For example, using docker-compose to mount local volume under /app
-FROM python-base as development
+FROM python:3.8.17-slim-bullseye as development
 
 # Copying poetry and venv into image
-COPY --from=builder-base $POETRY_HOME $POETRY_HOME
-COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
+COPY --from=base $PYSETUP_PATH $PYSETUP_PATH
+
+ENV VENV_PATH="/opt/pysetup/.venv"
 
 # Copying in our entrypoint
 COPY --chmod=744 ./devops/entrypoint-dev.sh /app/container-entrypoint.sh
 
 # Copying in our Gunicorn grace reload script
 COPY --chmod=744 ./devops/gunicorn-grace-reload.sh /app/gunicorn-grace-reload.sh
-
-# Install dev dependencies
-WORKDIR $PYSETUP_PATH
-RUN --mount=type=cache,target=/root/.cache/pypoetry \
-    poetry install --no-root
 
 WORKDIR /app
 COPY ./gunicorn_reload .
