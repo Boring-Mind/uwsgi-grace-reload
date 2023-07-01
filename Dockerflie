@@ -62,7 +62,7 @@ RUN mkdir -p $PYSETUP_PATH
 COPY --from=base $PYSETUP_PATH $PYSETUP_PATH
 
 # Copying in our entrypoint
-COPY --chmod=744 ./devops/entrypoint-dev.sh /app/container-entrypoint.sh
+COPY --chmod=744 ./devops/entrypoint-gunicorn.sh /app/container-entrypoint.sh
 
 # Copying in our Gunicorn grace reload script
 COPY --chmod=744 ./devops/gunicorn-grace-reload.sh /app/gunicorn-grace-reload.sh
