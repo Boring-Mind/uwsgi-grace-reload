@@ -4,3 +4,4 @@ Makefile
 .git
 .gitignore
 .idea
+k6_load_test.js
